@@ -1,10 +1,12 @@
+from __future__ import print_function
 import numpy as np
 import sys
 import glob
-import multiprocessing
 import random
 import itertools
 import math
+import json
+import util
 
 import matplotlib
 # Force matplotlib not to use X11 backend, which produces exception when run
@@ -12,29 +14,16 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-def load_mutpairs(fnames):
-  results = multiprocessing.Pool(8).map(load_single_mutpairs, fnames)
-  mutpairs = np.zeros(shape=(len(fnames), results[0].shape[0], 4), dtype=np.bool)
-  for i, fname in enumerate(fnames):
-    mutpairs[i,:,:] = results[i]
-  return mutpairs
-
-def load_single_mutpairs(fname):
-  t = np.loadtxt(fname)
-  t = t.astype(np.bool, copy=False)
-  t = t.T
-  return t
-
 def distance(a, b):
   return np.sum((a - b)**2)
 
 def compute_distances(mutpairs):
   N = mutpairs.shape[0]
+  distances = np.zeros((N, N))
   combos = itertools.combinations(range(N), 2)
-  distances = {}
   for a, b in combos:
     dist = distance(mutpairs[a], mutpairs[b])
-    distances[(a, b)] = distances[(b, a)] = dist
+    distances[a,b] = distances[b,a] = dist
   return distances
 
 def assign_medioids(N, medioids, distances):
@@ -46,9 +35,9 @@ def assign_medioids(N, medioids, distances):
     closest_medioid = None
     closest_distance = float('inf')
     for m in medioids:
-      if distances[(i, m)] < closest_distance:
+      if distances[i,m] < closest_distance:
 	closest_medioid = m
-	closest_distance = distances[(i, m)]
+	closest_distance = distances[i,m]
     assignments[i] = closest_medioid
 
   return assignments
@@ -56,7 +45,7 @@ def assign_medioids(N, medioids, distances):
 def compute_cost(assignments, distances):
   cost = 0
   for mutpair, medioid in assignments.items():
-    cost += distances[(mutpair, medioid)]
+    cost += distances[mutpair, medioid]
   return cost
 
 def test_all_pairwise_swaps(N, medioids, distances):
@@ -119,23 +108,32 @@ def dumb(N, K, distances):
 
   return (best_medioids, assign_medioids(N, best_medioids, distances))
 
-def log(args):
-  print(args)
+def log(*args):
+  print(*args, file=sys.stderr)
 
 def main():
-  K = 3
-
   fdir = sys.argv[1]
   flist = glob.glob(fdir + "/mutpairs_*")
-  flist = flist#[:100]
-  mutpairs = load_mutpairs(flist)
+  mutpairs = util.load_mutpairs(flist)
   log('Done loading mutpairs')
 
   N = mutpairs.shape[0]
   distances = compute_distances(mutpairs)
   log('Done computing distances')
-  medioids, assignments = cluster(N, K, distances)
-  print(medioids)
+
+  mapping = {}
+  for K in range(2, 11):
+    medioids, assignments = cluster(N, K, distances)
+    log('Done for k=%s' % K)
+
+    mapping[K] = {}
+    for med in medioids:
+      associated = [point for (point, m) in assignments.items() if m == med]
+      associated = [util.extract_score(flist[idx]) for idx in associated]
+      med_fname = util.extract_score(flist[med])
+      mapping[K][med_fname] = associated
+
+  print(json.dumps(mapping))
 
 def test_in_2d():
   K = 4
