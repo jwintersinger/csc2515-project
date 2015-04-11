@@ -5,22 +5,21 @@ import util
 import numpy as np
 import json
 
-limit = None
+limit = 10
 
-def create_models(clusters, mutpairs_flist):
-  mixing_props = np.zeros(len(clusters.keys()))
-  medioids = clusters.keys()
-  for i, med in enumerate(medioids):
-    mixing_props[i] = len(clusters[med])
+def create_kmed_models(clusters, mutpairs_flist):
+  mixing_props = np.zeros(len(clusters))
+  for i, cluster in enumerate(clusters):
+    mixing_props[i] = len(cluster['members'])
   mixing_props /= np.sum(mixing_props)
-  log_mixing_props = dict(zip(medioids, np.log(mixing_props)))
+  log_mixing_props = np.log(mixing_props)
 
-  models = {}
-  for medioid, members in clusters.items():
-    all_members = [medioid] + members
+  models = []
+  for cluster in clusters:
+    members = cluster['members']
     fpaths = []
     for fpath in mutpairs_flist:
-      for member in all_members:
+      for member in members:
 	if member in fpath:
 	  fpaths.append(fpath)
 
@@ -43,42 +42,57 @@ def create_models(clusters, mutpairs_flist):
     mean_mutpairs += pseudo_count * np.ones(mean_mutpairs.shape)
     # This ensures all values will be in [0, 1].
     mean_mutpairs /= (float(num_trees) + pseudo_count)
-    models[medioid] = mean_mutpairs
+    models.append(mean_mutpairs)
 
+  models = np.array(models)
   return (models, log_mixing_props)
 
-def calc_prob(models, mixing_props, mutpairs_flist):
+def calc_prob(models, log_mixing_props, mutpairs_flist):
   all_mutpairs = util.load_mutpairs(mutpairs_flist, in_parallel=False, limit=limit)
   all_probs = []
 
   for mutpairs in all_mutpairs:
     model_probs = []
-    for medioid, model in models.items():
+    for model, log_mixing_prop in zip(models, log_mixing_props):
       prob = mutpairs * model
+
+      # Ensure no elements are zero.
       prob = prob[np.nonzero(prob)]
-      # Compare tuple to tuple.
       assert prob.shape == model.shape[:-1]
-      #print(len(np.nonzero(prob != 1.1)))
+
       prob = np.sum(np.log(prob))
-      prob += mixing_props[medioid]
+      prob += log_mixing_prop
       model_probs.append(prob)
     all_probs.append(np.logaddexp.reduce(model_probs))
   # Return product of all_probs, which is in log space.
   return np.sum(all_probs)
 
+def assess_k_medioids(kmed_clusters, training_flist, test_flist):
+  for K, k_clusters in kmed_clusters.items():
+    models, log_mixing_props = create_kmed_models(k_clusters, training_flist)
+    prob = calc_prob(models, log_mixing_props, test_flist)
+    print(K, prob)
+
+def assess_em(rhos, pis, test_flist):
+  assert pis.keys() == rhos.keys()
+  for K in pis.keys():
+    prob = calc_prob(np.exp(rhos[K]), pis[K], test_flist)
+    print(K, prob)
+
 def main():
   training_dir = sys.argv[1]
   test_dir = sys.argv[2]
-  with open(sys.argv[3]) as clusterf:
-    clusters = json.load(clusterf)
+  with open(sys.argv[3]) as kmed_clusterf:
+    kmed_clusters = json.load(kmed_clusterf)
 
   training_flist = glob.glob(training_dir + "/mutpairs_*")
   test_flist = glob.glob(test_dir + "/mutpairs_*")
 
-  for K, k_clusters in clusters.items():
-    models, log_mixing_props = create_models(clusters[K], training_flist)
-    a = calc_prob(models, log_mixing_props, test_flist)
-    print(K, a)
+  assess_k_medioids(kmed_clusters, training_flist, test_flist)
+  with np.load(sys.argv[4]) as em_rhos:
+    with np.load(sys.argv[5]) as em_pis:
+      pass
+      #assess_em(em_rhos, em_pis, test_flist)
 
 if __name__ == '__main__':
   main()
