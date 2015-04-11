@@ -114,7 +114,7 @@ def log(*args):
 def main():
   fdir = sys.argv[1]
   flist = glob.glob(fdir + "/mutpairs_*")
-  mutpairs = util.load_mutpairs(flist)
+  mutpairs = util.load_mutpairs(flist, limit=None)
   log('Done loading mutpairs')
 
   N = mutpairs.shape[0]
@@ -126,12 +126,16 @@ def main():
     medioids, assignments = cluster(N, K, distances)
     log('Done for k=%s' % K)
 
-    mapping[K] = {}
-    for med in medioids:
-      associated = [point for (point, m) in assignments.items() if m == med]
-      associated = [util.extract_score(flist[idx]) for idx in associated]
-      med_fname = util.extract_score(flist[med])
-      mapping[K][med_fname] = associated
+    mapping[K] = []
+    for medioid in medioids:
+      members = [point for (point, med) in assignments.items() if med == medioid]
+      members = [util.extract_score(flist[idx]) for idx in members]
+      med_score = util.extract_score(flist[medioid])
+      members.append(med_score)
+      mapping[K].append({
+	'medioid': med_score,
+	'members': members,
+      })
 
   print(json.dumps(mapping))
 
