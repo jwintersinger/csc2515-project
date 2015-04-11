@@ -31,7 +31,8 @@ def load_data(fnames):
 	return data
 
 def load_data2(fnames):
-	results = multiprocessing.Pool(60).map(load_single_data,fnames)
+	#fnames = fnames[:5]
+	results = multiprocessing.Pool(20).map(load_single_data,fnames)
 	data = np.zeros(shape=(len(fnames),results[0].shape[0],4),dtype=np.bool)
 	for i,fname in enumerate(fnames):
 		data[i,:,:] = results[i]
@@ -84,9 +85,15 @@ def fit(x,k,max_iter=1000):
 		old_llh = llh 
 
 	print "Iterations until convergence: %d" % i
+	print('rhos', rhos)
+	print('pis', pis)
+	print('resps', resps)
 	return(llh,(pis,rhos,resps))
 
 def bic(N,d,k,llh):
+	# k-1: this is for pi vector -- prior probability that datum originates
+	#      from cluster
+	# N(k - 1): responsibility matrix
 	fp = k*d*3 + k-1 + N*(k-1)
 	return -2*llh + fp * np.log(N)
 
@@ -95,7 +102,7 @@ def map_fit(args):
 
 if __name__ == '__main__':
 	fdir = sys.argv[1]
-	maxk = 10
+	maxk = 3
 	flist = glob.glob(fdir+"/mutpairs_*")
 	data = load_data2(flist)
 
@@ -106,14 +113,22 @@ if __name__ == '__main__':
 		results.append(map_fit((data,k)))
 
 	#results = multiprocessing.Pool(maxk).map(map_fit,zip([data]*maxk,ks))
-	for i in range(len(ks)):
+	for K in ks:
+		i = K - 1
 		llh,model = results[i]
 		bicscore = bic(model[2].shape[0],model[1].shape[1],ks[i],llh)
 		print ks[i],llh,bicscore
 		print np.sum(model[2],axis=0)
 		output.append((ks[i],llh,bicscore))
 
-	f = open(fdir+".em2.txt","w")
+	pis = {str(i + 1): model[0] for (i, (llh, model)) in enumerate(results)}
+	rhos = {str(i + 1): model[1] for (i, (llh, model)) in enumerate(results)}
+	resps = {str(i + 1): model[2] for (i, (llh, model)) in enumerate(results)}
+	np.savez_compressed('pi.npz', **pis)
+	np.savez_compressed('rho.npz', **rhos)
+	np.savez_compressed('resp.npz', **resps)
+
+	f = open("em.txt","w")
 	f.write("\n".join([str(x) for x in output]))
 	f.close()
 	
