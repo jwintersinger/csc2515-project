@@ -129,7 +129,7 @@ if __name__ == '__main__':
 	np.savez_compressed('resp.npz', **resps)
 
 	f = open("em.txt","w")
-	f.write("\n".join([str(x) for x in output]))
+	f.write("\n".join([str(x) for x in output]) + '\n')
 	f.close()
 	
 	#x = test_data(1000,500)
