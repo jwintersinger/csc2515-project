@@ -113,8 +113,8 @@ def log(*args):
 
 def main():
   fdir = sys.argv[1]
-  flist = glob.glob(fdir + "/mutpairs_*")
-  mutpairs = util.load_mutpairs(flist, limit=None)
+  flist = glob.glob(fdir + "/mutpairs_-*")
+  mutpairs = util.load_mutpairs(flist, limit=None, in_parallel=False)
   log('Done loading mutpairs')
 
   N = mutpairs.shape[0]
@@ -122,7 +122,8 @@ def main():
   log('Done computing distances')
 
   mapping = {}
-  for K in range(2, 11):
+  maxK = 10
+  for K in range(1, maxK + 1):
     medioids, assignments = cluster(N, K, distances)
     log('Done for k=%s' % K)
 

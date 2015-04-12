@@ -32,13 +32,13 @@ def assign_clusters(rhos, mutpairs_flist):
   return assignments
 
 def main():
-  test_dir = sys.argv[1]
-  test_flist = glob.glob(test_dir + "/mutpairs_*")
+  mutpairs_dir = sys.argv[1]
+  mutpairs_flist = glob.glob(mutpairs_dir + "/mutpairs_-*")
 
   all_clusters = {}
   with np.load(sys.argv[2]) as em_rhos:
     for K in em_rhos.keys():
-      clusters = assign_clusters(em_rhos[K], test_flist)
+      clusters = assign_clusters(em_rhos[K], mutpairs_flist)
       clusters = [{'members': members} for members in clusters]
       all_clusters[K] = clusters
   print(json.dumps(all_clusters))

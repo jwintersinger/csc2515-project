@@ -102,8 +102,8 @@ def map_fit(args):
 
 if __name__ == '__main__':
 	fdir = sys.argv[1]
-	maxk = 3
-	flist = glob.glob(fdir+"/mutpairs_*")
+	maxk = 10
+	flist = glob.glob(fdir+"/mutpairs_-*")
 	data = load_data2(flist)
 
 	output = []

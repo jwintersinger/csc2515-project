@@ -85,8 +85,8 @@ def main():
   with open(sys.argv[3]) as kmed_clusterf:
     kmed_clusters = json.load(kmed_clusterf)
 
-  training_flist = glob.glob(training_dir + "/mutpairs_*")
-  test_flist = glob.glob(test_dir + "/mutpairs_*")
+  training_flist = glob.glob(training_dir + "/mutpairs_-*")
+  test_flist = glob.glob(test_dir + "/mutpairs_-*")
 
   assess_k_medioids(kmed_clusters, training_flist, test_flist)
   with np.load(sys.argv[4]) as em_rhos:
