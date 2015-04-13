@@ -1,0 +1,48 @@
+Methods:
+  EM:
+    Multinoulli mixture
+    BIC
+
+  kmed:
+    Distance metric
+
+  Dataset: 17 tumors from Train 63
+    Phylogenetic reconstruction done using randomly chosen subset of 5k mutations for each
+      Any variant in non-normal CN reginos rejected, as these would skew VAFs needed for reconstrcution
+
+  All code available on GH
+
+
+Figures:
+  Background:
+    Fig: example tree with SNV and CNV counts [proposal]
+    Fig: uncertainty in tree structure [retreat -- three figures -- a, b, c]
+    Fig: "seeing forest for the trees" [retreat]
+    Fig: four possible mutation structures [fig, table -- a, b]
+
+  Methods:
+    Flow chart showing mutpairs_{all,training,test}
+
+  Results:
+    Tables:
+      Prob of data for each method, for each K
+      Mean # of unique trees per cluster, for each K
+      With fixed K=3, members/cluster
+    Figures:
+      One dataset's cluster:
+        Medioiod + all unique trees in cluster
+      One dataset:
+        All medioids
+
+  Result (ideas):
+    All mutpairs:
+      Number of members per cluster
+      Number of unique trees per cluster
+      Example medioid for each cluster
+        And maybe similar trees for each medioid
+    Training/test mutpairs:
+      Likelihood of recapitulating data under model
+
+
+Other possible figures:
+  Fig: explanation of PWGS [proposal]
