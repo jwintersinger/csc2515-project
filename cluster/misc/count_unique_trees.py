@@ -6,16 +6,16 @@ import csv
 
 def find_most_likely_K(row, prefix):
   scores = {key: val for (key, val) in row.items() if key.startswith(prefix)}
-  min_score = float('inf')
-  min_K = None
+  max_score = float('-inf')
+  max_K = None
   for K, score in scores.items():
     score = float(score)
-    if score < min_score:
-      min_K = K
-      min_score = score
+    if score > max_score:
+      max_K = K
+      max_score = score
 
-  assert min_K.startswith(prefix)
-  K = int(min_K[len(prefix):])
+  assert max_K.startswith(prefix)
+  K = int(max_K[len(prefix):])
   return K
 
 def extract_tree_fraction(tree_fn):
