@@ -73,7 +73,7 @@ function assign_em_clusters {
 
     job_name=assign_em_clusters.$sampid
     log_prefix=$LOG_DIR/$job_name
-    output=$PWD/em_clusters.all.$sampid.json 
+    output=$PWD/em_clusters.all.$sampid.json
     rm -f $output
     qsub -b y -cwd -V -l h_vmem=16G -N $job_name -hold_jid cluster_all.em.$sampid \
       -o $output -e $log_prefix.stderr \
@@ -114,7 +114,7 @@ function eval_test_datasets {
     cd $MUTPAIRS_DIR/$sampid
     job_name=eval_test_datasets.$sampid
     log_prefix=$LOG_DIR/$job_name
-    output=test_likelihood.$sampid.txt 
+    output=test_likelihood.$sampid.txt
     rm -f $log_prefix.stderr $output
     qsub -b y -cwd -V -l h_vmem=16G -N $job_name \
       -hold_jid cluster_training.kmed.$sampid,cluster_training.em.$sampid \

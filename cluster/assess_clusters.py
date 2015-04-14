@@ -99,12 +99,16 @@ def main():
 	print('em', K, prob, file=sys.stderr)
 	results['em'][K] = prob
 
-  assert set(results['kmed'].keys()) == set(results['em'].keys())
+  assert sorted(results['kmed'].keys()) == sorted(results['em'].keys())
+  keys = sorted(results['kmed'].keys())
   output = []
-  for K in sorted(results['kmed'].keys()):
-    for method in ('kmed', 'em'):
+  cols = []
+  for method in ('kmed', 'em'):
+    for K in keys:
       output.append(results[method][K])
-  print(','.join([str(s) for s in output]))
+      cols.append('%s%s' % (method, K))
+  for arr in (cols, output):
+    print(','.join([str(s) for s in arr]))
 
 if __name__ == '__main__':
   main()
