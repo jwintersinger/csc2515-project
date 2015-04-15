@@ -71,13 +71,13 @@ def assess_k_medioids(kmed_clusters, training_flist, test_flist):
   for K, k_clusters in kmed_clusters.items():
     models, log_mixing_props = create_kmed_models(k_clusters, training_flist)
     prob = calc_prob(models, log_mixing_props, test_flist)
-    print(K, prob)
+    yield (int(K), prob)
 
 def assess_em(rhos, pis, test_flist):
   assert pis.keys() == rhos.keys()
   for K in pis.keys():
     prob = calc_prob(np.exp(rhos[K]), pis[K], test_flist)
-    print(K, prob)
+    yield (int(K), prob)
 
 def main():
   training_dir = sys.argv[1]
@@ -88,11 +88,27 @@ def main():
   training_flist = glob.glob(training_dir + "/mutpairs_-*")
   test_flist = glob.glob(test_dir + "/mutpairs_-*")
 
-  assess_k_medioids(kmed_clusters, training_flist, test_flist)
+  results = {'em': {}, 'kmed': {}}
+
+  for K, prob in assess_k_medioids(kmed_clusters, training_flist, test_flist):
+    print('kmed', K, prob, file=sys.stderr)
+    results['kmed'][K] = prob
   with np.load(sys.argv[4]) as em_rhos:
     with np.load(sys.argv[5]) as em_pis:
-      pass
-      #assess_em(em_rhos, em_pis, test_flist)
+      for K, prob in assess_em(em_rhos, em_pis, test_flist):
+	print('em', K, prob, file=sys.stderr)
+	results['em'][K] = prob
+
+  assert sorted(results['kmed'].keys()) == sorted(results['em'].keys())
+  keys = sorted(results['kmed'].keys())
+  output = []
+  cols = []
+  for method in ('kmed', 'em'):
+    for K in keys:
+      output.append(results[method][K])
+      cols.append('%s%s' % (method, K))
+  for arr in (cols, output):
+    print(','.join([str(s) for s in arr]))
 
 if __name__ == '__main__':
   main()

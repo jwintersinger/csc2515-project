@@ -28,7 +28,8 @@ def assign_clusters(rhos, mutpairs_flist):
 	best_model = model_idx
 
     #print(best_prob, best_model)
-    assignments[best_model].append(fname)
+    score = util.extract_score(fname)
+    assignments[best_model].append(score)
   return assignments
 
 def main():
