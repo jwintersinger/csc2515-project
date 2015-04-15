@@ -1,48 +1,61 @@
-Methods:
-  EM:
-    Multinoulli mixture
-    BIC
+Talk about how k-med gives natural way of visualizing tree
+  Would PCA benefit it?
 
-  kmed:
-    Distance metric
+Results:
+  Number SSMs per dataset
+    For methods: computationally intractable to perform clustering on larger datasets with >1000 mutations
+      Memory and runtime limitations prevented running on larger sets
 
-  Dataset: 17 tumors from Train 63
-    Phylogenetic reconstruction done using randomly chosen subset of 5k mutations for each
-      Any variant in non-normal CN reginos rejected, as these would skew VAFs needed for reconstrcution
+  Likelihood kmed & likelihood EM: in a
+    Only for 7f1ca (K=2) does EM do better than KM
+      This is out of 120 cases
+      Neither of these values corresponds to lowest produced for this dataset -- EM prefers K=9, while KM prefers K=3
+        BIC score likes K=3 for EM
+    In only one case do they agree on # of clusters
+      Otherwise, they're split
+        In 5/12 cases, em_idx < km_idx
+        In 6/12 cases, km_idx < em_idx
+    But this is in contrast to the various measures of cluster quality related to unique trees per cluster (TB4)
 
-  All code available on GH
+  BIC EM
+    BIC prefers smaller clusters -- simply too many params for larger ones
+      This is in direct contrast to likelihood metric
+        Lhood never selects models with <5 clusters
+        BIC never selects with >3
+    Thus, contrary to '03 NIPS paper, BIC may be suitable measure, since it seems to penalize model compelxity rather heavily
+
+  Unique trees kmed & unique trees EM
+    kmed quality -- mean(# trees per node / # unique trees) -- is almost always worse than EM, save for two datasets
+    Mean top tree iprovement:
+      kmed: 0.085
+      EM: 0.089
+
+Discussion:
+  EM often likes empty clusters, in which case the cluster has low shared responsibility for lots of trees, but is never deemed the most likely cluster for any
+    Consider 81a8, which prefers 10 clusters, 8 of which are empty
+      This needn't always be so, however -- 7f1c has 9 clusters, none of which are empty
+
+  Likelihood is poor means of determining success -- suggets kmed better, when in fact its performance is worse than EM
+
+Future directions:
+  Integrate BIC for kmed -- I should add my EM BIC scores now
+    Is likelihood best means of choosing model? Probably not
+  Move to variational Bayes
+  Expand analysis to more datasets
+    Ran out of memory on 36/48 of those tried
+
+Background:
+  Each subpopulation within tumor has associated set of mutations, with some shared with varying set of other subpops, and others potentially unique
+  By observing the frequencies of each mutation given a heterogeneous cell set taken from different subpops, one can infer that freqs with similar frequencies belong to same subpop
+  In some cases, uncertainty occurs as to subpop structure, however
+    Suppose three clusters of mutation frequencies observed in tumor -- 90%, 55%, 40%
+      Then because sum(B, C) > A, B and C can't occur in different branches, eliminataing branched
+      But if B was 45% instead, then things get messed up
+
+      
+  Important, then, is understanding variation in phylogenies amongst the thousands sampled
+    Sometimes, these differences reflect uncertainty in the principal structure of the tree, as in the case of branching vs. linear
+      The degree and nature of this uncertainty must be characterized and communicated to the researcher
+    Other times, these differences are just model noise -- slightly different trees, different LLHs, but same essential features
 
 
-Figures:
-  Background:
-    Fig: example tree with SNV and CNV counts [proposal]
-    Fig: uncertainty in tree structure [retreat -- three figures -- a, b, c]
-    Fig: "seeing forest for the trees" [retreat]
-    Fig: four possible mutation structures [fig, table -- a, b]
-
-  Methods:
-    Flow chart showing mutpairs_{all,training,test}
-
-  Results:
-    Tables:
-      Prob of data for each method, for each K
-      Mean # of unique trees per cluster, for each K
-      With fixed K=3, members/cluster
-    Figures:
-      One dataset's cluster:
-        Medioiod + all unique trees in cluster
-      One dataset:
-        All medioids
-
-  Result (ideas):
-    All mutpairs:
-      Number of members per cluster
-      Number of unique trees per cluster
-      Example medioid for each cluster
-        And maybe similar trees for each medioid
-    Training/test mutpairs:
-      Likelihood of recapitulating data under model
-
-
-Other possible figures:
-  Fig: explanation of PWGS [proposal]
