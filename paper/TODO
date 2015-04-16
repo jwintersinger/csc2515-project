@@ -1,0 +1,4 @@
+Discuss change in homo for BIC vs PL
+Discuss why PL chooses too many
+  Say that, though this work used PL to choose K, future work should use BIC or variational techniques for which K is chosen automatically
+Write about alternative quality metrics
