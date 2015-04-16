@@ -16,6 +16,27 @@ Methods:
 
   k-medioids:
     Distance metric: sum((a - b)**2)
+    kmed chosen because each cluster would naturally provide an exemplar of its structure -- the medioid
+  EM:
+    EM for mixture of multinoullis performed
+      One multinoulli associated with each pairwise mutation pair vector, indicating probabillity of given pair fallinmg into each of four classes
+      During E step, responsibilities of each cluster for each mutpair matrix chosen to maximize probability of generating observed data, given mixing proportion
+      During M step, quasi-MLE performed to choose optimal mixing proportions and mutation pair probabilities, weighted by responsibility of each cluster for each point
+        Pseudocounts used to ensure that none of four types of mutpair probs was zero in any given class
+
+    "Hard" assignments of each tree to single cluster needed for some later analysis steps, so that EM could be compared to KM, which inherently does "hard" assignments
+      This performed by determining which cluster bore the greatest responsibility for each point 
+
+  Choosing k:
+    Subsequently, BIC performed to choose optimal number of params
+      fp = k*d*3 + k-1 + N*(k-1)                                                                                                      
+      return -2*llh + fp * np.log(N) 
+    Generative:
+      Cluster mutpairs model needed
+        This was simply the rhos calculated in EM
+        For KM, calculated element-wise mean matrix from all cluster members
+          Used pseudocounts to ensure no column's prob would be zero
+
 
 Results:
   Number SSMs per dataset

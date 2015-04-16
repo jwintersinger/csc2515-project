@@ -90,7 +90,7 @@
 \end_layout
 
 \begin_layout Itemize
-\begin_inset Formula $L(\rho_{K},\pi_{K})=\prod_{T}\sum_{c=1}^{K}\pi_{c}P(T;\rho_{Kc})$
+\begin_inset Formula $L(\rho_{K},\pi_{K})=\prod_{T}\sum_{c=1}^{K}\pi_{Kc}P(T;\rho_{Kc})$
 \end_inset
 
 
