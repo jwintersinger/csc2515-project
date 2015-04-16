@@ -1,6 +1,22 @@
 Talk about how k-med gives natural way of visualizing tree
   Would PCA benefit it?
 
+Methods:
+  PWGS run on twelve tumors from PCAWG, each possessing from 147 to 675 mutations
+    Only SNV data used in model, not CNV
+    CNV data was used, however, to exclude mutations in regions of variant copy number
+      Such variations skew the mutation frequencies necessary to infer tumor populations
+    2500 trees then sampled using MCMC from distribution of trees consistent with observed mutation freqs
+      First came 1000 burn-in iterations
+      Though each tree had associated likelihood, these were not used
+
+  Each tree was then converted into a mutation pairs matrix
+    Such a matrix consists of a four-element binary vector for mutation pair, indicating which of four possible relationships the pair adheres to
+    Consequently, trees were clustered by clustering their associated mutpair matrices
+
+  k-medioids:
+    Distance metric: sum((a - b)**2)
+
 Results:
   Number SSMs per dataset
     For methods: computationally intractable to perform clustering on larger datasets with >1000 mutations
