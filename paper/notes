@@ -16,6 +16,9 @@ Results:
         In 5/12 cases, em_idx < km_idx
         In 6/12 cases, km_idx < em_idx
     But this is in contrast to the various measures of cluster quality related to unique trees per cluster (TB4)
+    Why am I seeing high K values for predictive likelihood?
+      Adding more clusters doesn't penalize the score, since I'm summing over all clusters for each tree, not taking their product
+        Adding more clusters may help with a few weird outllying datapoints, while not hurting the rest
 
   BIC EM
     BIC prefers smaller clusters -- simply too many params for larger ones
@@ -30,6 +33,8 @@ Results:
       kmed: 0.085
       EM: 0.089
 
+  # of clusters is too high for both KM and EM
+
 Discussion:
   EM often likes empty clusters, in which case the cluster has low shared responsibility for lots of trees, but is never deemed the most likely cluster for any
     Consider 81a8, which prefers 10 clusters, 8 of which are empty
@@ -43,6 +48,7 @@ Future directions:
   Move to variational Bayes
   Expand analysis to more datasets
     Ran out of memory on 36/48 of those tried
+  Generate consensus trees for EM -- kmed lends itself nicely to this
 
 Background:
   Each subpopulation within tumor has associated set of mutations, with some shared with varying set of other subpops, and others potentially unique
@@ -58,4 +64,11 @@ Background:
       The degree and nature of this uncertainty must be characterized and communicated to the researcher
     Other times, these differences are just model noise -- slightly different trees, different LLHs, but same essential features
 
-
+Other things to do in future:
+  Run on SciNet -- 256 GB RAM
+  Run Stephen's code -- faster, may offer better numerical precision
+  Add checks to my predicive likelihood evaluator to ensure that all all probailities in my likelihiood calcs (i.e., from the pis and the rhos) sum to 1 and are individually >0
+    There may be a bug in this code
+  Don't pick K using predictive likelihood
+    Instead, pick K using BIC
+    Still, it should be reasonably good for predicting LH of EM vs KM, once K is chosen
